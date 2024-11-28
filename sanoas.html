@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogo Educativo - Google Sheets</title>
+  <style>
+    /* Estilo geral para o corpo da página */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      flex-direction: column;
+    }
+
+    /* Estilo para a tela de boas-vindas */
+    .welcome-screen {
+      text-align: center;
+    }
+
+    .welcome-message {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .start-button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 15px 30px;
+      font-size: 18px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .start-button:hover {
+      background-color: #45a049;
+    }
+
+    /* Estilo para o jogo */
+    .game-container {
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 80%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    .question {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .options button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px;
+      margin: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    .options button:hover {
+      background-color: #45a049;
+    }
+
+    .feedback {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .score {
+      font-size: 22px;
+      margin-top: 30px;
+      font-weight: bold;
+    }
+
+    .correct-option {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .wrong-option {
+      background-color: #f44336;
+      color: white;
+    }
+
+    /* Estilo para a pontuação final */
+    .final-score {
+      font-size: 40px;
+      font-weight: bold;
+      color: #333;
+      margin-top: 30px;
+    }
+
+    .correct-score {
+      color: green;
+    }
+
+    .wrong-score {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <!-- Tela de boas-vindas -->
+  <div class="welcome-screen" id="welcomeScreen">
+    <div class="welcome-message">Bem-vindo ao Jogo Educativo!</div>
+    <button class="start-button" id="startButton">Iniciar</button>
+  </div>
+
+  <!-- Jogo -->
+  <div class="game-container" id="gameContainer" style="display: none;">
+    <div class="question"></div>
+    <div class="options"></div>
+    <div class="feedback"></div>
+    <div class="score"></div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const questions = [
+        {
+          question: "O que é uma coluna em uma planilha?",
+          options: ["Uma linha horizontal", "Um conjunto vertical de células", "A barra de ferramentas", "Uma célula específica"],
+          correct: 1
+        },
+        {
+          question: "Qual fórmula é usada para somar células em Excel?",
+          options: ["=MULT", "=SOMA(A1:A5)", "=DIV", "=MÉDIA"],
+          correct: 1
+        },
+        {
+          question: "Como identificar a célula na posição inicial?",
+          options: ["A1", "1A", "Inicio", "Linha 1"],
+          correct: 0
+        },
+        {
+          question: "Qual o atalho para salvar no Google Sheets?",
+          options: ["Ctrl+P", "Ctrl+S", "Ctrl+C", "Ctrl+Z"],
+          correct: 1
+        }
+      ];
+
+      let currentQuestion = 0;
+      let score = 0;
+
+      const welcomeScreen = document.getElementById("welcomeScreen");
+      const gameContainer = document.getElementById("gameContainer");
+      const questionEl = document.querySelector(".question");
+      const optionsEl = document.querySelector(".options");
+      const feedbackEl = document.querySelector(".feedback");
+      const scoreEl = document.querySelector(".score");
+
+      // Função para começar o jogo
+      document.getElementById("startButton").addEventListener("click", () => {
+        welcomeScreen.style.display = "none";
+        gameContainer.style.display = "block";
+        loadQuestion();
+      });
+
+      function loadQuestion() {
+        const q = questions[currentQuestion];
+        questionEl.textContent = q.question;
+        optionsEl.innerHTML = "";
+        feedbackEl.textContent = "";
+
+        q.options.forEach((option, index) => {
+          const button = document.createElement("button");
+          button.textContent = option;
+          button.onclick = function() { checkAnswer(index); };
+          button.classList.add("option-button");
+          optionsEl.appendChild(button);
+        });
+      }
+
+      function checkAnswer(selected) {
+        const q = questions[currentQuestion];
+        const buttons = document.querySelectorAll(".option-button");
+
+        // Destacar a opção correta
+        buttons[q.correct].classList.add("correct-option");
+
+        if (selected === q.correct) {
+          feedbackEl.textContent = "Correto! 🎉";
+          feedbackEl.style.color = "green";
+          score++;
+        } else {
+          feedbackEl.textContent = "Errado! 😢";
+          feedbackEl.style.color = "red";
+          // Destacar a opção errada
+          buttons[selected].classList.add("wrong-option");
+        }
+
+        currentQuestion++;
+        if (currentQuestion < questions.length) {
+          setTimeout(loadQuestion, 1000);
+        } else {
+          showScore();
+        }
+      }
+
+      function showScore() {
+        questionEl.textContent = "Fim do jogo!";
+        optionsEl.innerHTML = "";
+        feedbackEl.textContent = "";
+
+        // Criar uma nova div para exibir os acertos e erros
+        const finalScoreEl = document.createElement("div");
+        finalScoreEl.classList.add("final-score");
+
+        // Exibir os acertos
+        const correctText = document.createElement("p");
+        correctText.classList.add("correct-score");
+        correctText.textContent = `Acertos: ${score}`;
+
+        // Exibir os erros
+        const wrongText = document.createElement("p");
+        wrongText.classList.add("wrong-score");
+        wrongText.textContent = `Erros: ${questions.length - score}`;
+
+        // Adicionar ao final da pontuação
+        finalScoreEl.appendChild(correctText);
+        finalScoreEl.appendChild(wrongText);
+
+        // Adicionar a pontuação final ao corpo
+        document.body.appendChild(finalScoreEl);
+      }
+    });
+  </script>
+</body>
+</html>
